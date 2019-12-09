@@ -10,4 +10,7 @@
     <PackageReference Include="TweetinviAPI" Version="4.0.3" />
     <PackageReference Include="MongoDB.Driver" Version="2.9.3" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Remove="App.config" />
+  </ItemGroup>
 </Project>

@@ -39,8 +39,6 @@
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/obj/Debug/netcoreapp3.0/Xaas.csproj.CopyComplete
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/obj/Debug/netcoreapp3.0/Xaas.dll
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/obj/Debug/netcoreapp3.0/Xaas.pdb
-/Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/bin/Debug/netcoreapp3.0/App.config
-/Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/bin/Debug/netcoreapp3.0/Xaas.dll.config
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/bin/Debug/netcoreapp3.0/Autofac.dll
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/bin/Debug/netcoreapp3.0/Newtonsoft.Json.dll
 /Users/emmanuellopezguerrero/Documents/Documents/Documents/Xaas/Xaas/bin/Debug/netcoreapp3.0/Nito.AsyncEx.Context.dll

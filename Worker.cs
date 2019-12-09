@@ -6,17 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tweetinvi;
-using Tweetinvi.Models;
 using MongoDB.Driver;
 using MongoDB;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using Tweetinvi.Models;
+using Tweetinvi.Parameters;
+using Microsoft.Extensions.Configuration;
 
 namespace Xaas
 {
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        
 
         public Worker(ILogger<Worker> logger)
         {
@@ -28,75 +31,79 @@ namespace Xaas
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                // twitterConnection();
-                mongoConnectionTest();
-                 await Task.Delay(1000, stoppingToken);
+                twitterConnection();
+                await Task.Delay(30 * 1000, stoppingToken);
             }
         }
 
-        public void twitterConnection() {
-            // Authentication
-            Auth.SetUserCredentials("ConsumerKey", "ConsumerSecret", "AccessToken", "AccessTokenSecret");
+
+        public void twitterConnection()
+        {
+
+            List<string> arrayTweets = new List<string>();
+
+            Auth.SetUserCredentials("rtI8kLDqS1Q8K8NwHf4MGYOiA", "niRhPhndBvgwjThqmWq7iaDcvzihq5GhPcOYA4U82BYMadIMEO", "80160043-7tTguB43pjToVfPwPqk0kyAf6L2SzJLFKz4Ac1oY6", "FNch3gXRk0wzTgFe8uiqAJcs6mSwrsDN9WqpoZPfCQc5X");
             var stream = Stream.CreateFilteredStream();
-            stream.AddTrack("KEYWORD_TO_TRACK");
-
-            // Limit to English 
-            //stream.AddTweetLanguageFilter(LanguageFilter.English);
-
-            Console.WriteLine("Listening to Twitter");
+            //stream.AddTweetLanguageFile(LanguageFilter.English);
+            stream.AddTrack("love");
 
             stream.MatchingTweetReceived += (sender, arguments) =>
             {
-                Console.WriteLine(arguments.Tweet.Text);
+                //  stream
+                arrayTweets.Add(arguments.Tweet.Text);
+                //Console.WriteLine(arguments.Tweet.Text);
+                if (arrayTweets.Count().Equals(30))
+                {
+                    stream.PauseStream();
+                    getTweet(arrayTweets);
+                }
+                
+
             };
 
             stream.StartStreamMatchingAllConditions();
         }
 
-        public void mongoConnection() {
-
-            MongoCRUD db = MongoCRUD("startupTweets");
-            db.InsertRecord("ID", new tweetModel { tweet = "test tweet"});
-            Console.ReadLine(); 
-
-        }
-
-        private MongoCRUD MongoCRUD(string v)
+        #region tweeter
+        public void getTweet(List<string> arrayTweets)
         {
-            throw new NotImplementedException();
+            IMongoClient client = new MongoClient("mongodb://tweetUser:xaas123@ds251948.mlab.com:51948/tweetdb");
+            IMongoDatabase database = client.GetDatabase("tweetdb");
+
+            var collection = database.GetCollection<BsonDocument>("tweets");
+
+            foreach (string arrayTweet in arrayTweets)
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("body", arrayTweet);
+                var result = collection.Find(filter).FirstOrDefault();
+                if (result != null)
+                {
+                    Console.WriteLine("value duplicated");
+                }
+                else
+                {
+                    //insert
+                    Console.WriteLine("Insert");
+                    tweetClass tweetClass = new tweetClass();
+                    tweetClass.body = arrayTweet;
+
+                    insertTweet(tweetClass);
+
+                }
+            }
+
         }
 
-        public class tweetModel {
-            [BsonId]
-
-            public Guid Id { get; set; }
-            public string tweet { get; set; }
-        }
-
-
-        public async void mongoConnectionTest() {
+        public void insertTweet(tweetClass tweetClass)
+        {
+            IMongoClient client = new MongoClient("mongodb://tweetUser:xaas123@ds251948.mlab.com:51948/tweetdb?retryWrites=false");
+            IMongoDatabase database = client.GetDatabase("tweetdb");
+            var collection = database.GetCollection<BsonDocument>("tweets");
+            BsonDocument documento = tweetClass.ToBsonDocument();
 
             try
             {
-                string connectstring1 = "mongodb://tweetdb:xaas123@ds251948.mlab.com:51948/tweetdb";
-                MongoClient client = new MongoClient(connectstring1);
-                var db = client.GetDatabase("tweetdb");
-                var collection = db.GetCollection<BsonDocument>("tweet");
-                var filter1 = Builders<BsonDocument>.Filter.Empty;
-                var filter = new BsonDocument();
-                /*using (var cursor = await collection.FindAsync(filter))
-                {
-                    while (await cursor.MoveNextAsync())
-                    {
-                        var batch = cursor.Current;
-                        foreach (var document in batch)
-                        {
-                            Console.WriteLine(document[1].ToString());
-                        }
-                    }
-                }*/
-
-
+                collection.InsertOne(documento);
             }
             catch (Exception ex)
             {
@@ -104,24 +111,21 @@ namespace Xaas
             }
 
         }
+        #endregion tweeter
+
     }
 
+    #region body class
 
-    public class MongoCRUD {
-        private IMongoDatabase db;
+        public class tweetClass
+        {
 
-        public MongoCRUD(string database) {
-            var client = new MongoClient();
-            db = client.GetDatabase(database);
+            [BsonId]
+            public ObjectId _id { get; set; }
+
+            public string body { get; set; }
+
         }
-
-        public void InsertRecord<T>(String table, T record) {
-            var collection = db.GetCollection<T>(table);
-            collection.InsertOne(record);
-        }
-    }
-
-
-
-   
+    #endregion
 }
+

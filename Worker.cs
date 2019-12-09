@@ -39,7 +39,7 @@ namespace Xaas
                 twitterConnection();
 
                 //delay the time to recall the worker service, multiply by 30 to get a call each 30 seconds
-                await Task.Delay(30 * 1000, stoppingToken);
+                await Task.Delay(1000, stoppingToken);
             }
         }
         #endregion
@@ -73,6 +73,9 @@ namespace Xaas
 
             stream.MatchingTweetReceived += (sender, arguments) =>
             {
+
+                stream.ResumeStream();
+
                 //add the stream to the list
                 arrayTweets.Add(arguments.Tweet.Text);
               
@@ -83,6 +86,7 @@ namespace Xaas
 
                     //call the function that read the list of tweets
                     insertTweets(arrayTweets);
+                    Console.WriteLine("Execution finished");
                 }
                 
 
@@ -113,19 +117,20 @@ namespace Xaas
                 //if the tweet body its equals to the text of the query send the duplicate mesage
                 if (result != null)
                 {
-                    Console.WriteLine("value duplicated");
+                    Console.WriteLine("Tweet duplicated");
                 }
                 else
                 {
                     //call the insert the tweets
-
                     tweetClass.body = ListTweet;
-                    //insertTweet(tweetClass);
 
+                    //insertTweet(tweetClass);
                     BsonDocument documento = tweetClass.ToBsonDocument();
+
                     try
                     {
                         collection.InsertOne(documento);
+                        Console.WriteLine("Tweet inserted successfully");
                     }
                     catch (Exception ex)
                     {
@@ -142,7 +147,7 @@ namespace Xaas
 
     }
 
-    #region body class
+    #region tweet getter setter
 
         public class tweetClass
         {
